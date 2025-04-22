@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:vim_game/features/TargetSequence/TargetSequenceController.dart';
+import 'package:vim_game/features/drawer/drawer.dart';
 
 // --- Cores baseadas na referência visual (image.png) ---
 const Color primaryTextColor = Colors.white;
 const Color backgroundColor = Color(0xFF1A1A1A); // Cinza bem escuro
 const Color accentColor = Color(0xFF67D8EF); // Ciano/Azul claro
 const Color dimTextColor = Color(0xFF888888); // Cinza para texto/ícones futuros
+const Color headerGrayColor =
+    Color(0xFF303030); // Cinza para texto/ícones futuros
 // --- Fim das Cores ---
 
 void main() {
@@ -20,6 +24,7 @@ class VimGameApp extends StatelessWidget {
     return MaterialApp(
       title: 'vim_game',
       // Tema básico escuro inspirado na imagem
+      //TODO: mover para um arquivo especifico de tema
       theme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: backgroundColor,
@@ -64,66 +69,61 @@ class _GameScreenState extends State<GameScreen> {
   // Chave para controlar o Scaffold e abrir o Drawer programaticamente
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+// its like useState("Navigation") basically
+  String _currentMode = "Navigation";
+
+  void _handleModeSelection(String mode) {
+    setState(() {
+      _currentMode = mode;
+
+      print("Mode changed to: $_currentMode");
+    });
+
+    Navigator.pop(context); //fecha o drawer depois da seleção
+  }
+
   @override
   Widget build(BuildContext context) {
+    print("GameScreen build called. Current mode: $_currentMode");
     return Scaffold(
-      key: _scaffoldKey, // Associar a chave ao Scaffold
-      // Sem AppBar para seguir o layout da imagem
-
-      // Drawer (Placeholder - estrutura mínima)
-      // A lógica interna (ListTiles, setState) será adicionada depois
-      drawer: const Drawer(
-        child: Center(
-            child: Text("Mode Selection Placeholder")), // Placeholder simples
+      key: _scaffoldKey,
+      appBar: AppBar(
+        backgroundColor: headerGrayColor,
+        title: Text(
+          'Score: 0', // Score ainda é fixo, vamos lidar depois
+          style: Theme.of(context).textTheme.headlineSmall,
+        ),
+        leading: IconButton(
+            onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+            icon: const Icon(Icons.menu),
+            tooltip: 'Open navigation menu'),
       ),
-
-      // Corpo principal com a estrutura visual da imagem
+      drawer: Drawer(
+        child: ModeSelectorDrawer(
+          // Usando diretamente (ou envolto em Drawer)
+          currentMode: _currentMode,
+          onModeSelected: _handleModeSelection,
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
-          // mainAxisAlignment: MainAxisAlignment.center, // Ajustar depois
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const SizedBox(
-                height: 40), // Espaço no topo (simulando ausência da AppBar)
-
-            // 1. Score Display (Placeholder)
-            Text(
-              'Score: 0', // Valor estático por enquanto
-              // Usando estilo definido no tema
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
             const SizedBox(height: 40),
-
-            // 2. Hint Text (Placeholder)
             Text(
-              'Hint Text', // Texto estático por enquanto
-              // Usando estilo definido no tema
+              'Mode: $_currentMode', // Exibe o modo atual
               style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 40), // Espaço aumentado
 
-            // 3. Target Sequence Area (Placeholder)
-            Expanded(
-              // Usa o espaço restante
-              child: Container(
-                alignment: Alignment.center,
-                child: const Text(
-                  '[Target Sequence Row Placeholder]',
-                  style: TextStyle(color: dimTextColor),
-                ),
-              ),
+            // Substitua o Expanded/Container/Text placeholder por isto:
+            TargetSequenceController(
+              currentMode: _currentMode, // Passa o modo atual
             ),
 
-            // Botão temporário para abrir o Drawer (já que não temos AppBar)
-            // Pode ser removido/movido depois
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20.0),
-              child: ElevatedButton(
-                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                child: const Text('Open Drawer (Temp)'),
-              ),
-            ),
+            // Mantém um espaço flexível abaixo
+            const Expanded(child: SizedBox()),
           ],
         ),
       ),
